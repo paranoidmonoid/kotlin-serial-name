@@ -16,11 +16,12 @@
 
 plugins {
     id "org.jetbrains.kotlin.jvm"
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.4.30'
 }
 
 dependencies {
     compileOnly "io.arrow-kt:arrow-annotations:$ARROW_VERSION"
-
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
     // Depending on the example, it could be necessary to add these dependencies:
     //
     //   kotlinCompilerClasspath("org.jetbrains.kotlin:kotlin-script-util:$KOTLIN_VERSION") {
