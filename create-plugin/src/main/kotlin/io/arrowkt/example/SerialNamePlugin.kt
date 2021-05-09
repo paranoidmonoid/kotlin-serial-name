@@ -4,12 +4,8 @@ import arrow.meta.CliPlugin
 import arrow.meta.Meta
 import arrow.meta.invoke
 import arrow.meta.phases.analysis.isAnnotatedWith
-import arrow.meta.quotes.ScopedList
 import arrow.meta.quotes.Transform
 import arrow.meta.quotes.classDeclaration
-import arrow.meta.quotes.nameddeclaration.stub.Parameter
-import arrow.meta.quotes.parameter
-import org.jetbrains.kotlin.psi.psiUtil.containingClass
 import org.jetbrains.kotlin.psi.psiUtil.getValueParameters
 
 val Meta.serialNameGenerator: CliPlugin
@@ -26,7 +22,6 @@ val Meta.serialNameGenerator: CliPlugin
                         |    $body
                         |}
                     """.trimMargin()
-//                    TODO(newDeclaration)
                     Transform.Companion.replace(classElement, if (skip) this else newDeclaration.`class`.syntheticScope)
                 }
 
