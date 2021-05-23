@@ -3,16 +3,26 @@ package io.arrowkt.example
 import arrow.meta.CliPlugin
 import arrow.meta.Meta
 import arrow.meta.invoke
+import arrow.meta.phases.CompilerContext
 import arrow.meta.phases.analysis.isAnnotatedWith
 import arrow.meta.quotes.Transform
 import arrow.meta.quotes.classDeclaration
 import org.jetbrains.kotlin.psi.psiUtil.getValueParameters
+import kotlin.contracts.ExperimentalContracts
+
+class SerialNamePlugin : Meta {
+    @ExperimentalContracts
+    override fun intercept(ctx: CompilerContext): List<CliPlugin> =
+        listOf(
+            serialNameGenerator
+        )
+}
 
 val Meta.serialNameGenerator: CliPlugin
     get() =
         "Serial Name Plugin" {
             meta(
-                classDeclaration(this, { name == "Cat" }) { classElement ->
+                classDeclaration(this, { isAnnotatedWith("@Serializable".toRegex()) }) { classElement ->
                     val skip = value.getValueParameters().all { it.isAnnotatedWith(".*SerialName.*".toRegex()) }
                     val paramList = value.getValueParameters()
                         .map { "@kotlinx.serialization.SerialName(\"${it.name?.toSnakeCase()}\") ${it.text}" }

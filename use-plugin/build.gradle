@@ -6,20 +6,6 @@ plugins {
 dependencies {
     compileOnly "io.arrow-kt:arrow-annotations:$ARROW_VERSION"
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
-    // Depending on the example, it could be necessary to add these dependencies:
-    //
-    //   kotlinCompilerClasspath("org.jetbrains.kotlin:kotlin-script-util:$KOTLIN_VERSION") {
-    //       exclude group: "org.jetbrains.kotlin", module: "kotlin-stdlib"
-    //       exclude group: "org.jetbrains.kotlin", module: "kotlin-compiler"
-    //       exclude group: "org.jetbrains.kotlin", module: "kotlin-compiler-embeddable"
-    //   }
-    //   kotlinCompilerClasspath("org.jetbrains.kotlin:kotlin-compiler-embeddable:$KOTLIN_VERSION")
-    //   kotlinCompilerClasspath("org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:$KOTLIN_VERSION")
-
-    testImplementation "org.junit.jupiter:junit-jupiter:$JUNIT_VERSION"
-    testImplementation "org.assertj:assertj-core:$ASSERTJ_VERSION"
-
-
 }
 
 compileKotlin {
@@ -29,24 +15,6 @@ compileKotlin {
     }
 }
 
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "$JVM_TARGET_VERSION"
-    }
-}
-
-test {
-    useJUnitPlatform()
-}
-
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
     compileTask -> compileTask.dependsOn ":create-plugin:assemble"
-}
-
-jar {
-    manifest {
-        attributes(
-                "Main-Class": "io.arrowkt.example.HelloWorldKt"
-        )
-    }
 }
