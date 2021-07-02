@@ -1,5 +1,3 @@
-package io.arrowkt.example
-
 import arrow.meta.CliPlugin
 import arrow.meta.Meta
 import arrow.meta.invoke
