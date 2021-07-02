@@ -1,0 +1,20 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm"
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.4.30'
+}
+
+dependencies {
+    compileOnly "io.arrow-kt:arrow-annotations:$ARROW_VERSION"
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "$JVM_TARGET_VERSION"
+        freeCompilerArgs = ["-Xplugin=${rootDir}/create-plugin/build/libs/create-plugin.jar"]
+    }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+    compileTask -> compileTask.dependsOn ":create-plugin:assemble"
+}

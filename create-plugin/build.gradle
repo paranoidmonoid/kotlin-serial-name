@@ -1,0 +1,26 @@
+import java.nio.file.Paths
+
+plugins {
+    id "org.jetbrains.kotlin.jvm"
+}
+
+dependencies {
+    compileOnly "org.jetbrains.kotlin:kotlin-compiler-embeddable:$KOTLIN_VERSION"
+    compileOnly "io.arrow-kt:compiler-plugin:$ARROW_META_VERSION"
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "$JVM_TARGET_VERSION"
+    }
+}
+
+jar {
+    from (
+       zipTree(sourceSets.main.compileClasspath.find {
+           it.absolutePath.contains(Paths.get("arrow-kt","compiler-plugin").toString())
+       })
+    ) {
+        exclude 'META-INF/services/org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar'
+    }
+}
