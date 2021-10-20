@@ -1,10 +1,12 @@
 package io.arrowkt.example
 
+//import SerializeWithStrategy
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Serializable
+// @SerializeWithStrategy(SerializationStrategy.KebabCase)
 data class Cat(val name: String, val age: Int, val ownerName: String, val breed: String)
 
 @Serializable
