@@ -7,6 +7,7 @@ plugins {
 dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-compiler-embeddable:$KOTLIN_VERSION"
     compileOnly "io.arrow-kt:compiler-plugin:$ARROW_META_VERSION"
+    compileOnly project(':api-to-use')
 }
 
 compileKotlin {

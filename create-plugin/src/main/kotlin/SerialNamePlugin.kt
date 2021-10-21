@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.psi.psiUtil.getValueParameters
 class SerialNamePlugin : Meta {
     override fun intercept(ctx: CompilerContext): List<CliPlugin> =
         listOf(
-            serialNamePlugin
+            customAnnotationSerialNamePlugin
         )
 }
 
@@ -23,8 +23,9 @@ val Meta.serialNamePlugin: CliPlugin
                     val paramList = value.getValueParameters()
                         .map { "@kotlinx.serialization.SerialName(\"${it.name?.toSnakeCase()}\") ${it.text}" }
                     val paramListString = paramList.joinToString(", ", "(", ")")
+                    val annotations =  classElement.annotationEntries.joinToString("\n") { it.text }
                     val newDeclaration = """
-                        |$`@annotations` $kind $name$`(typeParameters)`$paramListString {
+                        |$annotations $kind $name$`(typeParameters)`$paramListString {
                         |    $body
                         |}
                     """.trimMargin()
@@ -33,30 +34,35 @@ val Meta.serialNamePlugin: CliPlugin
             )
         }
 
-annotation class SerializeWithStrategy(val strategy: SerializationStrategy)
-
-enum class SerializationStrategy {
-    SnakeCase, KebabCase
-}
-
 val Meta.customAnnotationSerialNamePlugin: CliPlugin
     get() =
         "Serial Name With Strategy" {
             meta(
-                classDeclaration(this, { isAnnotatedWith("Serializable".toRegex()) }) { classElement ->
-
-                    val annotation = classElement.annotations.first {
-                        it.name?.contains(SerializeWithStrategy::class.simpleName!!) == true
+                classDeclaration(this, { isAnnotatedWith("@SerializeWithStrategy\\(.+\\)".toRegex()) }) { classElement ->
+                    val annotation = classElement.annotationEntries.first {
+                        it.text?.contains("SerializeWithStrategy") == true
                     }
-                    throw IllegalArgumentException("$annotation")
+                    val case = annotation.valueArguments
+                        .first()
+                        .getArgumentExpression()!!
+                        .text
+                        .removePrefix("SerializationStrategy.")
+                    val caseFunction = when(case) {
+                        "KebabCase" -> String::toKebabCase
+                        "SnakeCase" -> String::toSnakeCase
+                        else -> error("Unexpected strategy")
+                    }
                     val paramList = value.getValueParameters()
-                        .map { "@kotlinx.serialization.SerialName(\"${it.name?.toSnakeCase()}\") ${it.text}" }
+                        .map { if (it.isAnnotatedWith("@(kotlinx\\.serialization\\.)?SerialName\\(.+\\)".toRegex())) it.text else "@kotlinx.serialization.SerialName(\"${it.name?.let(caseFunction)}\") ${it.text}" }
                     val paramListString = paramList.joinToString(", ", "(", ")")
+                    val annotations =  classElement.annotationEntries.joinToString(" ") { it.text } // workaround to avoid arrow-meta issue
+
                     val newDeclaration = """
-                        |$`@annotations` $kind $name$`(typeParameters)`$paramListString {
+                        |$annotations $kind $name$`(typeParameters)`$paramListString {
                         |    $body
                         |}
                     """.trimMargin()
+//                    check(false) {newDeclaration}
                     Transform.replace(classElement, newDeclaration.`class`.syntheticScope)
                 }
             )
@@ -64,6 +70,7 @@ val Meta.customAnnotationSerialNamePlugin: CliPlugin
 
 
 fun String.toSnakeCase() = splitToWords().joinToString("_").lowercase()
+fun String.toKebabCase() = splitToWords().joinToString("-").lowercase()
 
 // https://stackoverflow.com/questions/7593969/regex-to-split-camelcase-or-titlecase-advanced#comment57838106_7599674
 private fun String.splitToWords() =
