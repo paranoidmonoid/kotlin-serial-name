@@ -63,18 +63,20 @@ val Meta.customAnnotationSerialNamePlugin: CliPlugin
                     }
                     val paramList = value.getValueParameters()
                         .map {
-                            if (it.isAnnotatedWith("@(kotlinx\\.serialization\\.)?SerialName\\(.+\\)".toRegex())) it.text else "@kotlinx.serialization.SerialName(\"${
-                                it.name?.let(
-                                    caseFunction
-                                )
-                            }\") ${it.text}"
+                            if (it.isAnnotatedWith("@(kotlinx\\.serialization\\.)?SerialName\\(.+\\)".toRegex())) {
+                                it.text
+                            } else {
+                                "@kotlinx.serialization.SerialName(\"${
+                                    it.name?.let(
+                                        caseFunction
+                                    )
+                                }\") ${it.text}"
+                            }
                         }
                     val paramListString = paramList.joinToString(", ", "(", ")")
-                    val annotations =
-                        classElement.annotationEntries.joinToString(" ") { it.text } // workaround to avoid arrow-meta issue
 
                     val newDeclaration = """
-                        |$annotations $kind $name$`(typeParameters)`$paramListString {
+                        |$`@annotations` $kind $name$`(typeParameters)`$paramListString {
                         |    $body
                         |}
                     """.trimMargin()
