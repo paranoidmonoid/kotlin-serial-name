@@ -23,7 +23,7 @@ val Meta.serialNamePlugin: CliPlugin
                     val paramList = value.getValueParameters()
                         .map { "@kotlinx.serialization.SerialName(\"${it.name?.toSnakeCase()}\") ${it.text}" }
                     val paramListString = paramList.joinToString(", ", "(", ")")
-                    val annotations =  classElement.annotationEntries.joinToString("\n") { it.text }
+                    val annotations = classElement.annotationEntries.joinToString("\n") { it.text }
                     val newDeclaration = """
                         |$annotations $kind $name$`(typeParameters)`$paramListString {
                         |    $body
@@ -38,7 +38,9 @@ val Meta.customAnnotationSerialNamePlugin: CliPlugin
     get() =
         "Serial Name With Strategy" {
             meta(
-                classDeclaration(this, { isAnnotatedWith("@SerializeWithStrategy\\(.+\\)".toRegex()) }) { classElement ->
+                classDeclaration(
+                    this,
+                    { isAnnotatedWith("@SerializeWithStrategy\\(.+\\)".toRegex()) }) { classElement ->
                     val annotation = classElement.annotationEntries.first {
                         it.text?.contains("SerializeWithStrategy") == true
                     }
@@ -47,22 +49,28 @@ val Meta.customAnnotationSerialNamePlugin: CliPlugin
                         .getArgumentExpression()!!
                         .text
                         .removePrefix("SerializationStrategy.")
-                    val caseFunction = when(case) {
+                    val caseFunction = when (case) {
                         "KebabCase" -> String::toKebabCase
                         "SnakeCase" -> String::toSnakeCase
                         else -> error("Unexpected strategy")
                     }
                     val paramList = value.getValueParameters()
-                        .map { if (it.isAnnotatedWith("@(kotlinx\\.serialization\\.)?SerialName\\(.+\\)".toRegex())) it.text else "@kotlinx.serialization.SerialName(\"${it.name?.let(caseFunction)}\") ${it.text}" }
+                        .map {
+                            if (it.isAnnotatedWith("@(kotlinx\\.serialization\\.)?SerialName\\(.+\\)".toRegex())) it.text else "@kotlinx.serialization.SerialName(\"${
+                                it.name?.let(
+                                    caseFunction
+                                )
+                            }\") ${it.text}"
+                        }
                     val paramListString = paramList.joinToString(", ", "(", ")")
-                    val annotations =  classElement.annotationEntries.joinToString(" ") { it.text } // workaround to avoid arrow-meta issue
+                    val annotations =
+                        classElement.annotationEntries.joinToString(" ") { it.text } // workaround to avoid arrow-meta issue
 
                     val newDeclaration = """
                         |$annotations $kind $name$`(typeParameters)`$paramListString {
                         |    $body
                         |}
                     """.trimMargin()
-//                    check(false) {newDeclaration}
                     Transform.replace(classElement, newDeclaration.`class`.syntheticScope)
                 }
             )
