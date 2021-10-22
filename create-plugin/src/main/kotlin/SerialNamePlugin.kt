@@ -19,9 +19,16 @@ val Meta.serialNamePlugin: CliPlugin
         "Serial Name Plugin" {
             meta(
                 classDeclaration(this, { isAnnotatedWith("@Serializable".toRegex()) }) { classElement ->
-                    val skip = value.getValueParameters().all { it.isAnnotatedWith(".*SerialName.*".toRegex()) }
                     val paramList = value.getValueParameters()
-                        .map { "@kotlinx.serialization.SerialName(\"${it.name?.toSnakeCase()}\") ${it.text}" }
+                        .map {
+                            if (it.isAnnotatedWith("@(kotlinx\\.serialization\\.)?SerialName\\(.+\\)".toRegex())) {
+                                it.text
+                            } else {
+                                "@kotlinx.serialization.SerialName(\"${
+                                    it.name?.toSnakeCase()
+                                }\") ${it.text}"
+                            }
+                        }
                     val paramListString = paramList.joinToString(", ", "(", ")")
                     val annotations = classElement.annotationEntries.joinToString("\n") { it.text }
                     val newDeclaration = """
@@ -29,7 +36,7 @@ val Meta.serialNamePlugin: CliPlugin
                         |    $body
                         |}
                     """.trimMargin()
-                    Transform.replace(classElement, if (skip) this else newDeclaration.`class`.syntheticScope)
+                    Transform.replace(classElement, newDeclaration.`class`.syntheticScope)
                 }
             )
         }
