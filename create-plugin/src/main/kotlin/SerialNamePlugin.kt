@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.psi.psiUtil.getValueParameters
 class SerialNamePlugin : Meta {
     override fun intercept(ctx: CompilerContext): List<CliPlugin> =
         listOf(
-            customAnnotationSerialNamePlugin
+            serialNamePlugin
         )
 }
 
@@ -23,9 +23,9 @@ val Meta.serialNamePlugin: CliPlugin
                     val paramList = value.getValueParameters()
                         .map { "@kotlinx.serialization.SerialName(\"${it.name?.toSnakeCase()}\") ${it.text}" }
                     val paramListString = paramList.joinToString(", ", "(", ")")
-                    val annotations =  classElement.annotationEntries.joinToString("\n") { it.text }
+                        //val annotations =  classElement.annotationEntries.joinToString("\n") { it.text }
                     val newDeclaration = """
-                        |$annotations $kind $name$`(typeParameters)`$paramListString {
+                        |$`@annotations` $kind $name$`(typeParameters)`$paramListString {
                         |    $body
                         |}
                     """.trimMargin()

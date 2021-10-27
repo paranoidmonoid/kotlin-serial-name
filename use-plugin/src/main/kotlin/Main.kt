@@ -3,11 +3,11 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Serializable
-@SerializeWithStrategy(SerializationStrategy.KebabCase)
+//@SerializeWithStrategy(SerializationStrategy.KebabCase)
 data class Cat(val name: String, val age: Int, val ownerName: String, val breed: String)
 
 @Serializable
-@SerializeWithStrategy(SerializationStrategy.SnakeCase)
+//@SerializeWithStrategy(SerializationStrategy.SnakeCase)
 data class Dog(val name: String, val age: Int, val ownerName: String, val breed: String)
 
 fun main() {
